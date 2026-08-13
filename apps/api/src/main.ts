@@ -8,8 +8,10 @@ async function bootstrap() {
   app.setGlobalPrefix("api/v1");
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
-  // Plataformas de deploy (Railway, Render, ...) injetam PORT; API_PORT é a
-  // convenção usada em dev local via .env.
+  // Usado apenas para rodar a API como servidor tradicional (dev local ou
+  // self-host). Em produção na Netlify o entrypoint é apps/api/src/lambda.ts
+  // (função serverless, sem porta escutando). API_PORT é a convenção do .env
+  // local.
   const port = process.env.PORT ?? process.env.API_PORT ?? 4000;
   await app.listen(port, "0.0.0.0");
   // eslint-disable-next-line no-console

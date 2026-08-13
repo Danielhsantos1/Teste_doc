@@ -22,7 +22,7 @@ está configurada, em vez de simular uma análise). Ver `ROADMAP.md` para o que 
 | [`DATABASE.md`](./DATABASE.md) | Modelo de dados conceitual: domínios de entidade, relacionamentos, estratégia multi-tenant no banco, retenção/LGPD |
 | [`SECURITY.md`](./SECURITY.md) | Requisitos de segurança, isolamento de tenant, RBAC, proteção OWASP, segurança de IA, LGPD |
 | [`ROADMAP.md`](./ROADMAP.md) | Fases técnicas (0–12), relação com o roadmap comercial do pitch deck, critério de aceite por fase, status atual |
-| [`DEPLOY.md`](./DEPLOY.md) | Deploy real (Railway + Vercel) para gerar um link público, sem instalar nada localmente |
+| [`DEPLOY.md`](./DEPLOY.md) | Deploy real (Neon + Netlify) para gerar um link público, sem instalar nada localmente |
 
 ## Como rodar localmente
 

@@ -1,0 +1,29 @@
+# Config do site Netlify do BACKEND (apps/api), separado do site do
+# frontend (netlify.toml na raiz do repo). No dashboard da Netlify, crie um
+# segundo site apontando para este mesmo repositório e defina:
+#   Base directory: apps/api
+# Com isso a Netlify lê este arquivo (relativo a apps/api) em vez do
+# netlify.toml da raiz.
+#
+# O build roda `prisma migrate deploy` e o seed idempotente a cada deploy —
+# não existe um "container sempre ligado" fazendo isso na inicialização como
+# no modelo antigo (Railway); aqui cada `git push` na branch conectada dispara
+# um novo build, que é o único momento em que o processo tem uma janela de
+# execução "longa" (a função em si, depois, só responde requisições HTTP).
+[build]
+  command = "cd ../.. && npm ci && npx prisma generate --schema packages/database/prisma/schema.prisma && npx prisma migrate deploy --schema packages/database/prisma/schema.prisma && npx tsx packages/database/prisma/seed.ts && npm run build --workspace=@docdeck/api"
+  publish = "public"
+  functions = "netlify/functions"
+
+[functions]
+  node_bundler = "esbuild"
+
+# Todas as rotas da API (ex.: /api/v1/health, /api/v1/auth/login) são
+# atendidas pela mesma função serverless (netlify/functions/api.js). A
+# Netlify preserva o path original da requisição em event.path — por isso o
+# NestJS (com global prefix "api/v1") continua roteando normalmente, sem
+# precisar remover/reescrever o prefixo "/api" no meio do caminho.
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
