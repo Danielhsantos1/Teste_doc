@@ -22,6 +22,11 @@ interface CompanyDetail {
     expiresAt: string | null;
     documentType: { name: string };
   }[];
+  computedRisk: {
+    score: number;
+    level: string;
+    factors: { code: string; label: string; points: number }[];
+  };
 }
 
 export default function CompanyDetailPage() {
@@ -52,10 +57,37 @@ export default function CompanyDetailPage() {
       </div>
 
       <div className="grid grid-cols-3 gap-4">
-        <StatTile label="Risk score" value={company.riskScore} tone={company.riskLevel === "CRITICAL" ? "critical" : undefined} />
+        <StatTile
+          label="Risk score (calculado)"
+          value={company.computedRisk.score}
+          tone={company.computedRisk.level === "CRITICAL" ? "critical" : undefined}
+        />
         <StatTile label="Trabalhadores" value={company.workers.length} />
         <StatTile label="Contratos" value={company.contracts.length} />
       </div>
+
+      <Card>
+        <div className="mb-3 flex items-center justify-between">
+          <div className="text-sm font-medium text-gray-100">Por que este risco?</div>
+          <RiskBadge level={company.computedRisk.level} />
+        </div>
+        {company.computedRisk.factors.length === 0 ? (
+          <p className="text-sm text-muted">
+            Nenhum fator de risco identificado nos sinais disponíveis hoje (documentos e
+            trabalhadores bloqueados). Requisitos contratuais pendentes ainda não entram
+            no cálculo — o Requirement Engine é uma fase futura do ROADMAP.
+          </p>
+        ) : (
+          <ul className="flex flex-col gap-2">
+            {company.computedRisk.factors.map((f) => (
+              <li key={f.code} className="flex items-center justify-between text-sm">
+                <span className="text-gray-100">{f.label}</span>
+                <span className="tabular-nums text-medium">+{f.points}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Card>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Card>

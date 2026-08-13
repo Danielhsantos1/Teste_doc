@@ -206,10 +206,11 @@ model Worker {
 // ---------------------------------------------------------------------------
 
 model DocumentType {
-  id        String @id @default(uuid())
-  code      String @unique // ASO, NR35, CONTRATO_SOCIAL, ...
-  name      String
-  documents Document[]
+  id         String  @id @default(uuid())
+  code       String  @unique // ASO, NR35, CONTRATO_SOCIAL, ...
+  name       String
+  isCritical Boolean @default(false) // usado pelo Risk Engine (packages/risk-engine)
+  documents  Document[]
 
   @@map("document_types")
 }

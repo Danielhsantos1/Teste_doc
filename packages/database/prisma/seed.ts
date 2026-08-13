@@ -72,14 +72,18 @@ async function main() {
   });
 
   const docTypeDefs = [
-    { code: "ASO", name: "Atestado de Saúde Ocupacional" },
-    { code: "NR35", name: "Treinamento NR-35 — Trabalho em Altura" },
-    { code: "CONTRATO_SOCIAL", name: "Contrato Social" },
-    { code: "CND", name: "Certidão Negativa de Débitos" },
+    { code: "ASO", name: "Atestado de Saúde Ocupacional", isCritical: true },
+    { code: "NR35", name: "Treinamento NR-35 — Trabalho em Altura", isCritical: true },
+    { code: "CONTRATO_SOCIAL", name: "Contrato Social", isCritical: false },
+    { code: "CND", name: "Certidão Negativa de Débitos", isCritical: false },
   ];
   const docTypes = await Promise.all(
     docTypeDefs.map((d) =>
-      prisma.documentType.upsert({ where: { code: d.code }, update: {}, create: d })
+      prisma.documentType.upsert({
+        where: { code: d.code },
+        update: { isCritical: d.isCritical },
+        create: d,
+      })
     )
   );
   const [aso, nr35, contratoSocial, cnd] = docTypes;
@@ -160,6 +164,11 @@ async function main() {
       })
     );
   }
+
+  // Documentos não têm uma chave natural para upsert; para o seed continuar
+  // idempotente ao ser reexecutado em dev, sempre recriamos do zero os
+  // documentos deste tenant antes de gerar o novo lote de DEMO DATA.
+  await prisma.document.deleteMany({ where: { tenantId: tenant.id } });
 
   // Documentos: mistura de vencidos, vencendo em breve e válidos, ligados a
   // trabalhadores e empresas, para popular o Command Center com números reais.
