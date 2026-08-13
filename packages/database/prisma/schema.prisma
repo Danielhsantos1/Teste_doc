@@ -171,8 +171,18 @@ model Contract {
   endDate       DateTime
   riskScore     Int      @default(0)
   riskLevel     RiskLevel @default(LOW)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+
+  // Wizard "Cadastrar Novo Contrato" (CLM) — preenchidos passo a passo.
+  modalidade         String? // CENTRALIZADA | DESCENTRALIZADA | EMERGENCIAL
+  objeto             String?
+  escopo             String?
+  technicalProposal  String?
+  commercialValue    Float?
+  paymentTerms       String?
+  additionalNotes    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)

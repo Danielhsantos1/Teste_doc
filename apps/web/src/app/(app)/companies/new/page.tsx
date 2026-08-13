@@ -68,7 +68,7 @@ export default function NewCompanyPage() {
   return (
     <div className="flex max-w-xl flex-col gap-6">
       <div>
-        <h1 className="text-xl font-semibold text-gray-50">Nova empresa</h1>
+        <h1 className="text-xl font-semibold text-gray-900">Nova empresa</h1>
         <p className="text-sm text-muted">
           Cadastro de contratada — o mesmo fluxo usado a partir da criação de um contrato.
         </p>
@@ -85,7 +85,7 @@ export default function NewCompanyPage() {
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-gray-50 outline-none focus:border-accent"
+                className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-gray-900 outline-none focus:border-accent"
               />
             </div>
             <div>
@@ -97,7 +97,7 @@ export default function NewCompanyPage() {
                 placeholder="00.000.000/0001-00"
                 value={cnpj}
                 onChange={(e) => setCnpj(e.target.value)}
-                className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-gray-50 outline-none focus:border-accent"
+                className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-gray-900 outline-none focus:border-accent"
               />
             </div>
             <div>
@@ -109,7 +109,7 @@ export default function NewCompanyPage() {
                 type="email"
                 value={contactEmail}
                 onChange={(e) => setContactEmail(e.target.value)}
-                className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-gray-50 outline-none focus:border-accent"
+                className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-gray-900 outline-none focus:border-accent"
               />
             </div>
 
@@ -128,7 +128,7 @@ export default function NewCompanyPage() {
 
       {pending && !confirmed && (
         <Card>
-          <div className="mb-2 text-sm font-medium text-gray-100">Confirme o cadastro</div>
+          <div className="mb-2 text-sm font-medium text-gray-800">Confirme o cadastro</div>
           <p className="mb-4 text-sm text-muted">
             Em produção, um e-mail de confirmação seria enviado para{" "}
             <span className="text-gray-200">{contactEmail}</span> (Notification Engine — ainda
@@ -162,7 +162,7 @@ export default function NewCompanyPage() {
           <ul className="mb-4 flex flex-col gap-2">
             {confirmed.documents.map((d) => (
               <li key={d.id} className="flex items-center justify-between text-sm">
-                <span className="text-gray-100">{d.documentType.name}</span>
+                <span className="text-gray-800">{d.documentType.name}</span>
                 <span className="text-xs text-medium">{d.status}</span>
               </li>
             ))}

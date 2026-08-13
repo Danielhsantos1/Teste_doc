@@ -33,7 +33,7 @@ export default function DocumentsPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-xl font-semibold text-gray-50">Documentos</h1>
+        <h1 className="text-xl font-semibold text-gray-900">Documentos</h1>
         <p className="text-sm text-muted">{documents.length} documentos neste tenant, ordenados por vencimento.</p>
       </div>
 
@@ -50,8 +50,8 @@ export default function DocumentsPage() {
           </thead>
           <tbody>
             {documents.map((d) => (
-              <tr key={d.id} className="border-b border-border last:border-0 hover:bg-white/5">
-                <td className="px-4 py-3 font-medium text-gray-50">{d.documentType.name}</td>
+              <tr key={d.id} className="border-b border-border last:border-0 hover:bg-black/5">
+                <td className="px-4 py-3 font-medium text-gray-900">{d.documentType.name}</td>
                 <td className="px-4 py-3 text-muted">{d.worker?.name ?? d.company?.name ?? "—"}</td>
                 <td className="px-4 py-3 text-muted">
                   {d.expiresAt ? new Date(d.expiresAt).toLocaleDateString("pt-BR") : "sem vencimento"}

@@ -2,7 +2,7 @@ import clsx from "clsx";
 
 export function Card({ className, children }: { className?: string; children: React.ReactNode }) {
   return (
-    <div className={clsx("rounded-xl border border-border bg-card p-5", className)}>
+    <div className={clsx("rounded-xl border border-border bg-card p-5 shadow-sm", className)}>
       {children}
     </div>
   );
@@ -18,7 +18,7 @@ export function StatTile({
   tone?: "default" | "critical" | "warning";
 }) {
   const toneClass =
-    tone === "critical" ? "text-critical" : tone === "warning" ? "text-medium" : "text-gray-50";
+    tone === "critical" ? "text-critical" : tone === "warning" ? "text-medium" : "text-gray-900";
 
   return (
     <Card className="flex flex-col gap-1">

@@ -47,7 +47,7 @@ export default function CompanyDetailPage() {
     <div className="flex flex-col gap-6">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-gray-50">{company.name}</h1>
+          <h1 className="text-xl font-semibold text-gray-900">{company.name}</h1>
           <p className="text-sm text-muted">{company.cnpj}</p>
         </div>
         <div className="flex items-center gap-2">
@@ -68,7 +68,7 @@ export default function CompanyDetailPage() {
 
       <Card>
         <div className="mb-3 flex items-center justify-between">
-          <div className="text-sm font-medium text-gray-100">Por que este risco?</div>
+          <div className="text-sm font-medium text-gray-800">Por que este risco?</div>
           <RiskBadge level={company.computedRisk.level} />
         </div>
         {company.computedRisk.factors.length === 0 ? (
@@ -81,7 +81,7 @@ export default function CompanyDetailPage() {
           <ul className="flex flex-col gap-2">
             {company.computedRisk.factors.map((f) => (
               <li key={f.code} className="flex items-center justify-between text-sm">
-                <span className="text-gray-100">{f.label}</span>
+                <span className="text-gray-800">{f.label}</span>
                 <span className="tabular-nums text-medium">+{f.points}</span>
               </li>
             ))}
@@ -91,11 +91,11 @@ export default function CompanyDetailPage() {
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Card>
-          <div className="mb-3 text-sm font-medium text-gray-100">Trabalhadores</div>
+          <div className="mb-3 text-sm font-medium text-gray-800">Trabalhadores</div>
           <ul className="flex flex-col gap-2">
             {company.workers.map((w) => (
               <li key={w.id} className="flex items-center justify-between text-sm">
-                <span className="text-gray-100">{w.name}</span>
+                <span className="text-gray-800">{w.name}</span>
                 <div className="flex items-center gap-2">
                   <StatusBadge status={w.status} />
                   <RiskBadge level={w.riskLevel} />
@@ -107,11 +107,11 @@ export default function CompanyDetailPage() {
         </Card>
 
         <Card>
-          <div className="mb-3 text-sm font-medium text-gray-100">Contratos</div>
+          <div className="mb-3 text-sm font-medium text-gray-800">Contratos</div>
           <ul className="flex flex-col gap-2">
             {company.contracts.map((c) => (
               <li key={c.id} className="flex items-center justify-between text-sm">
-                <span className="text-gray-100">{c.code}</span>
+                <span className="text-gray-800">{c.code}</span>
                 <div className="flex items-center gap-2">
                   <span className="tabular-nums text-muted">{c.riskScore}</span>
                   <RiskBadge level={c.riskLevel} />
@@ -123,11 +123,11 @@ export default function CompanyDetailPage() {
         </Card>
 
         <Card className="lg:col-span-2">
-          <div className="mb-3 text-sm font-medium text-gray-100">Documentos</div>
+          <div className="mb-3 text-sm font-medium text-gray-800">Documentos</div>
           <ul className="flex flex-col gap-2">
             {company.documents.map((d) => (
               <li key={d.id} className="flex items-center justify-between text-sm">
-                <span className="text-gray-100">{d.documentType.name}</span>
+                <span className="text-gray-800">{d.documentType.name}</span>
                 <div className="flex items-center gap-3">
                   <span className="text-xs text-muted">
                     {d.expiresAt ? `vence em ${new Date(d.expiresAt).toLocaleDateString("pt-BR")}` : "sem vencimento"}

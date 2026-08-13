@@ -32,7 +32,7 @@ export default function WorkersPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-xl font-semibold text-gray-50">Trabalhadores</h1>
+        <h1 className="text-xl font-semibold text-gray-900">Trabalhadores</h1>
         <p className="text-sm text-muted">{workers.length} trabalhadores neste tenant.</p>
       </div>
 
@@ -49,9 +49,9 @@ export default function WorkersPage() {
           </thead>
           <tbody>
             {workers.map((w) => (
-              <tr key={w.id} className="border-b border-border last:border-0 hover:bg-white/5">
+              <tr key={w.id} className="border-b border-border last:border-0 hover:bg-black/5">
                 <td className="px-4 py-3">
-                  <Link href={`/workers/${w.id}`} className="font-medium text-gray-50 hover:text-accent">
+                  <Link href={`/workers/${w.id}`} className="font-medium text-gray-900 hover:text-accent">
                     {w.name}
                   </Link>
                 </td>

@@ -18,6 +18,7 @@ const PERMISSIONS = [
   "documents.approve",
   "risk.read",
   "contracts.read",
+  "contracts.create",
   "audits.read",
 ];
 

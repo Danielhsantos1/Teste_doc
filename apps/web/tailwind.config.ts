@@ -5,15 +5,15 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        surface: "#0b0f19",
-        card: "#0f1524",
-        border: "#1f2937",
-        muted: "#8b93a7",
-        accent: "#3b82f6",
-        critical: "#ef4444",
-        high: "#f97316",
-        medium: "#eab308",
-        low: "#22c55e",
+        surface: "#f7f8fa",
+        card: "#ffffff",
+        border: "#e2e5eb",
+        muted: "#6b7280",
+        accent: "#2563eb",
+        critical: "#dc2626",
+        high: "#ea580c",
+        medium: "#ca8a04",
+        low: "#16a34a",
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],

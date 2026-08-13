@@ -33,7 +33,7 @@ export default function CompaniesPage() {
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-gray-50">Empresas</h1>
+          <h1 className="text-xl font-semibold text-gray-900">Empresas</h1>
           <p className="text-sm text-muted">{companies.length} empresas cadastradas neste tenant.</p>
         </div>
         <Link
@@ -59,9 +59,9 @@ export default function CompaniesPage() {
           </thead>
           <tbody>
             {companies.map((c) => (
-              <tr key={c.id} className="border-b border-border last:border-0 hover:bg-white/5">
+              <tr key={c.id} className="border-b border-border last:border-0 hover:bg-black/5">
                 <td className="px-4 py-3">
-                  <Link href={`/companies/${c.id}`} className="font-medium text-gray-50 hover:text-accent">
+                  <Link href={`/companies/${c.id}`} className="font-medium text-gray-900 hover:text-accent">
                     {c.name}
                   </Link>
                 </td>

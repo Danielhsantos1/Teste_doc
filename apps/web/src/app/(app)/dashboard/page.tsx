@@ -45,7 +45,7 @@ export default function DashboardPage() {
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <h1 className="text-xl font-semibold text-gray-50">Command Center</h1>
+        <h1 className="text-xl font-semibold text-gray-900">Command Center</h1>
         <p className="text-sm text-muted">
           Visão consolidada da operação — dados de demonstração (DEMO DATA).
         </p>
@@ -76,9 +76,9 @@ export default function DashboardPage() {
                 <li key={c.id}>
                   <Link
                     href={`/companies/${c.id}`}
-                    className="flex items-center justify-between rounded-lg px-2 py-1.5 text-sm hover:bg-white/5"
+                    className="flex items-center justify-between rounded-lg px-2 py-1.5 text-sm hover:bg-black/5"
                   >
-                    <span className="text-gray-100">{c.name}</span>
+                    <span className="text-gray-800">{c.name}</span>
                     <span className="tabular-nums text-critical">{c.riskScore}</span>
                   </Link>
                 </li>
@@ -96,9 +96,9 @@ export default function DashboardPage() {
                 <li key={w.id}>
                   <Link
                     href={`/workers/${w.id}`}
-                    className="flex flex-col rounded-lg px-2 py-1.5 text-sm hover:bg-white/5"
+                    className="flex flex-col rounded-lg px-2 py-1.5 text-sm hover:bg-black/5"
                   >
-                    <span className="text-gray-100">{w.name}</span>
+                    <span className="text-gray-800">{w.name}</span>
                     <span className="text-xs text-muted">{w.company.name}</span>
                   </Link>
                 </li>
@@ -114,7 +114,7 @@ export default function DashboardPage() {
               )}
               {actions.expiringDocs.map((d) => (
                 <li key={d.id} className="flex flex-col rounded-lg px-2 py-1.5 text-sm">
-                  <span className="text-gray-100">{d.documentType.name}</span>
+                  <span className="text-gray-800">{d.documentType.name}</span>
                   <span className="text-xs text-muted">
                     vence em {new Date(d.expiresAt).toLocaleDateString("pt-BR")}
                   </span>

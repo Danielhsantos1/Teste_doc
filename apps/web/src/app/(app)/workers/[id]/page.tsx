@@ -42,7 +42,7 @@ export default function WorkerDetailPage() {
     <div className="flex flex-col gap-6">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-gray-50">{worker.name}</h1>
+          <h1 className="text-xl font-semibold text-gray-900">{worker.name}</h1>
           <p className="text-sm text-muted">
             {worker.role} — {worker.company.name}
           </p>
@@ -63,11 +63,11 @@ export default function WorkerDetailPage() {
       </div>
 
       <Card>
-        <div className="mb-3 text-sm font-medium text-gray-100">Documentos</div>
+        <div className="mb-3 text-sm font-medium text-gray-800">Documentos</div>
         <ul className="flex flex-col gap-2">
           {worker.documents.map((d) => (
             <li key={d.id} className="flex items-center justify-between text-sm">
-              <span className="text-gray-100">{d.documentType.name}</span>
+              <span className="text-gray-800">{d.documentType.name}</span>
               <div className="flex items-center gap-3">
                 {d.aiConfidence != null && (
                   <span className="text-xs text-muted">
