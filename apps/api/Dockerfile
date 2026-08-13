@@ -3,6 +3,13 @@
 # No Railway: dockerfilePath = apps/api/Dockerfile, build context = raiz.
 FROM node:20-slim
 
+# O motor do Prisma precisa de libssl para rodar; a imagem node:*-slim
+# (Debian) não vem com OpenSSL instalado por padrão, o que faz a API
+# quebrar silenciosamente ao iniciar (antes mesmo de escutar na porta,
+# então o healthcheck nunca responde). ca-certificates junto para as
+# chamadas HTTPS (ex.: packages/ai chamando a API da Anthropic).
+RUN apt-get update -y && apt-get install -y openssl ca-certificates && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
 COPY package.json package-lock.json ./
