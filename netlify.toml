@@ -1,0 +1,10 @@
+# Deploy do frontend (apps/web) na Netlify. Roda a partir da raiz do
+# monorepo para o npm workspaces resolver corretamente — apps/web não tem
+# dependências dos outros packages, mas manter o install na raiz evita
+# inconsistência com o package-lock.json único do monorepo.
+[build]
+  command = "npm install && npm run build --workspace=@docdeck/web"
+  publish = "apps/web/.next"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"

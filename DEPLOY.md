@@ -1,12 +1,20 @@
-# Deploy real (Railway + Vercel) — sem instalar nada localmente
+# Deploy real (Railway + Netlify) — sem instalar nada localmente
 
 Este passo a passo gera um link público de verdade (com backend e banco
 funcionando), sem precisar de Node/Postgres na sua máquina. O deploy roda nos
-servidores da Railway e da Vercel — não no sandbox onde o Claude Code está
+servidores da Railway e da Netlify — não no sandbox onde o Claude Code está
 rodando, que tem a rede bloqueada para esses destinos.
 
-Pré-requisito: os arquivos `apps/api/Dockerfile`, `railway.toml` e
-`.dockerignore` já estão neste branch, prontos para a Railway usar.
+Pré-requisito: os arquivos `apps/api/Dockerfile`, `railway.toml`,
+`.dockerignore` e `netlify.toml` já estão neste branch, prontos para a
+Railway e a Netlify usarem.
+
+**Por que Railway para o backend?** A Netlify é ótima para o frontend
+(Next.js), mas foi feita para sites estáticos + funções serverless, não para
+um servidor persistente (NestJS) com um Postgres de verdade atrás. Forçar a
+API para dentro de Netlify Functions exigiria reescrever como ela sobe,
+aceitando cold starts e timeout de request — não vale a pena. Backend e
+banco continuam na Railway; só o frontend muda para a Netlify.
 
 ## 1. Backend + banco (Railway)
 
@@ -43,20 +51,30 @@ Pré-requisito: os arquivos `apps/api/Dockerfile`, `railway.toml` e
 9. Teste abrindo `https://SEU-DOMINIO.up.railway.app/api/v1/health` no
    navegador — deve responder `{"status":"ok",...}`.
 
-## 2. Frontend (Vercel)
+## 2. Frontend (Netlify)
 
-1. Crie uma conta em https://vercel.com (grátis).
-2. **Add New → Project** → importe o mesmo repositório
-   `Danielhsantos1/Teste_doc`.
+1. Crie uma conta em https://netlify.com (grátis).
+2. **Add new site → Import an existing project** → conecte o GitHub e
+   selecione `Danielhsantos1/Teste_doc`.
 3. Selecione a branch `claude/docdeck-saas-architecture-5qhlk2`.
-4. Em **Root Directory**, clique em "Edit" e escolha `apps/web`. O preset
-   "Next.js" deve ser detectado automaticamente.
-5. Em **Environment Variables**, adicione:
+4. A Netlify deve detectar o `netlify.toml` na raiz automaticamente (comando
+   de build e diretório de publicação já configurados nele — não precisa
+   preencher esses campos manualmente). Se ela pedir para confirmar:
+   - Build command: `npm install && npm run build --workspace=@docdeck/web`
+   - Publish directory: `apps/web/.next`
+5. Antes de clicar em deploy, vá em **Site configuration → Environment
+   variables** (ou "Add environment variables" na própria tela de import) e
+   adicione:
    - `NEXT_PUBLIC_API_URL` → a URL da API do Railway (passo 1.7), sem barra
      no final. Ex.: `https://docdeck-api-production.up.railway.app`
 6. Deploy.
-7. A Vercel te entrega uma URL tipo `https://docdeck-xxx.vercel.app` — esse é
-   o link para testar.
+7. A Netlify entrega uma URL tipo `https://docdeck-xxx.netlify.app` — esse é
+   o link para testar. (Dá pra apelidar o subdomínio em **Site
+   configuration → Domain management**, se quiser algo mais legível.)
+
+<sub>Prefere Vercel? O mesmo `apps/web` funciona lá sem nenhuma mudança —
+basta importar o repo, setar Root Directory = `apps/web` e a mesma variável
+`NEXT_PUBLIC_API_URL`.</sub>
 
 ## Login de demonstração
 
@@ -64,7 +82,7 @@ Pré-requisito: os arquivos `apps/api/Dockerfile`, `railway.toml` e
 
 ## Se algo der errado
 
-Me manda o log de erro (da Railway ou da Vercel, tem em ambos os
+Me manda o log de erro (da Railway ou da Netlify, tem em ambos os
 dashboards) que eu ajudo a resolver. Não consegui testar o build do Docker
 de ponta a ponta neste sandbox (não tem Docker instalado aqui), mas validei
 cada comando do Dockerfile individualmente: `npm ci`, `prisma generate` e o
