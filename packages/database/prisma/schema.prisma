@@ -15,8 +15,16 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  // DATABASE_URL: conexão via pooler (PgBouncer) — usada em runtime pela
+  // aplicação (bom para serverless, onde cada invocação pode abrir uma nova
+  // conexão). DIRECT_URL: conexão direta ao Postgres — usada só por
+  // `prisma migrate`/`db push`, porque migrations dependem de locks de
+  // sessão que não funcionam de forma confiável atrás de um pooler em modo
+  // transaction. Em dev local (um único Postgres, sem pooler) as duas
+  // variáveis apontam para a mesma URL.
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 enum RiskLevel {

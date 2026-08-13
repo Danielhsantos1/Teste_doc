@@ -26,17 +26,21 @@ e `netlify.toml` (raiz, do frontend) já estão neste branch.
 2. **Create a project** → dê um nome (ex.: `docdeck`) e escolha uma região
    próxima do Brasil (ex.: `us-east` costuma ser a mais próxima disponível no
    free tier).
-3. A Neon já cria um banco e mostra uma **Connection string** do tipo:
-   `postgresql://usuario:senha@ep-xxxxx.us-east-2.aws.neon.tech/docdeck?sslmode=require`
-4. Copie essa connection string — é o valor de `DATABASE_URL` que você vai
-   usar tanto no site da API quanto no site do front (indiretamente, via
-   API). Guarde num lugar seguro por enquanto (ela tem a senha do banco).
-
-> A Neon oferece uma versão "pooled" (com `-pooler` no host) e uma "direct"
-> da mesma connection string. Para começar, use a **direct** (sem
-> `-pooler`) nos dois lugares abaixo — é mais simples e suficiente para o
-> volume de uso inicial. Se no futuro aparecerem erros de "too many
-> connections" com tráfego mais alto, troque pela versão pooled.
+3. No painel do projeto, clique em **Connect** para ver a connection string.
+   A Neon mostra a versão **pooled** por padrão (o host tem `-pooler` nele),
+   algo como:
+   `postgresql://usuario:senha@ep-xxxxx-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require`
+4. Você vai precisar de **duas** variáveis (o schema do Prisma já está
+   preparado pra isso):
+   - `DATABASE_URL` → a connection string **pooled** (com `-pooler`), usada
+     pela aplicação em runtime — importante em ambiente serverless, onde
+     cada invocação pode abrir uma conexão nova.
+   - `DIRECT_URL` → a mesma connection string, mas **sem** `-pooler` no
+     host (ex.: `ep-xxxxx.us-east-2.aws.neon.tech` em vez de
+     `ep-xxxxx-pooler...`). Usada só pelas migrations do Prisma, que
+     precisam de uma conexão direta — atrás do pooler (modo "transaction"),
+     os locks que o `prisma migrate` usa não funcionam de forma confiável.
+   Guarde as duas num lugar seguro por enquanto (têm a senha do banco).
 
 ## 2. Backend (Netlify — site 1: `apps/api`)
 
@@ -52,7 +56,9 @@ e `netlify.toml` (raiz, do frontend) já estão neste branch.
      directory)
 5. Antes (ou logo depois) do primeiro deploy, vá em **Site configuration →
    Environment variables** e adicione:
-   - `DATABASE_URL` → a connection string da Neon (passo 1.3/1.4).
+   - `DATABASE_URL` → a connection string **pooled** da Neon (passo 1.4).
+   - `DIRECT_URL` → a connection string **direta** da Neon (passo 1.4, sem
+     `-pooler` no host).
    - `JWT_SECRET` → uma string aleatória longa (gere com
      `openssl rand -hex 32` em qualquer terminal, ou um gerador de senha
      online confiável).
