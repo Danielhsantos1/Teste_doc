@@ -16,7 +16,7 @@ interface WorkerDetail {
   company: { id: string; name: string };
   documents: {
     id: string;
-    fileName: string;
+    fileName: string | null;
     status: string;
     expiresAt: string | null;
     aiConfidence: number | null;

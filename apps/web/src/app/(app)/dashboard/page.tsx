@@ -19,7 +19,7 @@ interface Summary {
 interface PriorityActions {
   criticalCompanies: { id: string; name: string; riskScore: number }[];
   blockedWorkers: { id: string; name: string; company: { name: string } }[];
-  expiringDocs: { id: string; fileName: string; expiresAt: string; documentType: { name: string } }[];
+  expiringDocs: { id: string; fileName: string | null; expiresAt: string; documentType: { name: string } }[];
 }
 
 export default function DashboardPage() {

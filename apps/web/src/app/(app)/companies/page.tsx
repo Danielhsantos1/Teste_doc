@@ -31,9 +31,17 @@ export default function CompaniesPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-xl font-semibold text-gray-50">Empresas</h1>
-        <p className="text-sm text-muted">{companies.length} empresas cadastradas neste tenant.</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-semibold text-gray-50">Empresas</h1>
+          <p className="text-sm text-muted">{companies.length} empresas cadastradas neste tenant.</p>
+        </div>
+        <Link
+          href="/companies/new"
+          className="rounded-lg bg-accent px-3 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
+        >
+          + Nova empresa
+        </Link>
       </div>
 
       <Card className="p-0">

@@ -134,7 +134,14 @@ model Company {
   tenantId  String
   name      String
   cnpj      String
-  status    String   @default("ACTIVE") // ACTIVE | SUSPENDED | BLOCKED
+  // PENDING_CONFIRMATION | ACTIVE | SUSPENDED | BLOCKED — o fluxo de
+  // cadastro (ARCHITECTURE.md §8) começa em PENDING_CONFIRMATION e só vira
+  // ACTIVE após confirmação de e-mail, quando as pendências documentais
+  // obrigatórias também são criadas.
+  status            String    @default("ACTIVE")
+  contactEmail      String?
+  confirmationToken String?   @unique
+  confirmedAt       DateTime?
   riskScore Int      @default(0)
   riskLevel RiskLevel @default(LOW)
   createdAt DateTime @default(now())
@@ -221,7 +228,9 @@ model Document {
   companyId      String?
   workerId       String?
   documentTypeId String
-  fileName       String
+  // Nulo enquanto o documento é apenas uma pendência aguardando upload
+  // (ex.: requisito obrigatório criado na confirmação de cadastro).
+  fileName       String?
   status         DocumentStatus @default(PENDING)
   issuedAt       DateTime?
   expiresAt      DateTime?

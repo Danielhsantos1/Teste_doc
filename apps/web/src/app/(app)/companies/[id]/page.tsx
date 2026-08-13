@@ -17,7 +17,7 @@ interface CompanyDetail {
   contracts: { id: string; code: string; status: string; riskLevel: string; riskScore: number }[];
   documents: {
     id: string;
-    fileName: string;
+    fileName: string | null;
     status: string;
     expiresAt: string | null;
     documentType: { name: string };

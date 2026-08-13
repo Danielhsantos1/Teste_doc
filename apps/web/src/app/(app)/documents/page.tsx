@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card";
 
 interface DocumentRow {
   id: string;
-  fileName: string;
+  fileName: string | null;
   status: string;
   issuedAt: string | null;
   expiresAt: string | null;

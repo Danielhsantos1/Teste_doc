@@ -27,6 +27,7 @@ export function StatusBadge({ status }: { status: string }) {
     ACTIVE: "bg-low/10 text-low border-low/30",
     PENDING: "bg-medium/10 text-medium border-medium/30",
     PENDENTE: "bg-medium/10 text-medium border-medium/30",
+    PENDING_CONFIRMATION: "bg-medium/10 text-medium border-medium/30",
     APTO_COM_RESTRICAO: "bg-medium/10 text-medium border-medium/30",
     UNDER_REVIEW: "bg-accent/10 text-accent border-accent/30",
     EXPIRED: "bg-critical/10 text-critical border-critical/30",
