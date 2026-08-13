@@ -8,8 +8,10 @@ async function bootstrap() {
   app.setGlobalPrefix("api/v1");
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
-  const port = process.env.API_PORT ?? 4000;
-  await app.listen(port);
+  // Plataformas de deploy (Railway, Render, ...) injetam PORT; API_PORT é a
+  // convenção usada em dev local via .env.
+  const port = process.env.PORT ?? process.env.API_PORT ?? 4000;
+  await app.listen(port, "0.0.0.0");
   // eslint-disable-next-line no-console
   console.log(`DocDeck API rodando em http://localhost:${port}/api/v1`);
 }
