@@ -7,6 +7,7 @@ import { CompaniesModule } from "./companies/companies.module";
 import { WorkersModule } from "./workers/workers.module";
 import { DocumentsModule } from "./documents/documents.module";
 import { ContractsModule } from "./contracts/contracts.module";
+import { RolesModule } from "./roles/roles.module";
 import { HealthController } from "./health/health.controller";
 
 @Module({
@@ -19,6 +20,7 @@ import { HealthController } from "./health/health.controller";
     WorkersModule,
     DocumentsModule,
     ContractsModule,
+    RolesModule,
   ],
   controllers: [HealthController],
 })

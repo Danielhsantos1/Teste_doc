@@ -8,6 +8,7 @@
     "start": "node dist/main.js"
   },
   "dependencies": {
+    "@docdeck/ai": "*",
     "@docdeck/database": "*",
     "@docdeck/risk-engine": "*",
     "@nestjs/common": "^10.4.4",

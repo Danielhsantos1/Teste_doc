@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { apiFetch } from "@/lib/api";
 import { StatusBadge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -51,7 +52,11 @@ export default function DocumentsPage() {
           <tbody>
             {documents.map((d) => (
               <tr key={d.id} className="border-b border-border last:border-0 hover:bg-black/5">
-                <td className="px-4 py-3 font-medium text-gray-900">{d.documentType.name}</td>
+                <td className="px-4 py-3 font-medium">
+                  <Link href={`/documents/${d.id}`} className="text-gray-900 hover:text-accent">
+                    {d.documentType.name}
+                  </Link>
+                </td>
                 <td className="px-4 py-3 text-muted">{d.worker?.name ?? d.company?.name ?? "—"}</td>
                 <td className="px-4 py-3 text-muted">
                   {d.expiresAt ? new Date(d.expiresAt).toLocaleDateString("pt-BR") : "sem vencimento"}

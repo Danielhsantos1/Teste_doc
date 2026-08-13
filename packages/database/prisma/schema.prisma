@@ -58,6 +58,8 @@ model Tenant {
   contracts Contract[]
   documents Document[]
   auditLogs AuditLog[]
+  roles     Role[]
+  aiAnalyses AIAnalysis[]
 
   @@map("tenants")
 }
@@ -97,12 +99,24 @@ model UserTenantAccess {
 }
 
 model Role {
-  id          String   @id @default(uuid())
-  key         String   @unique // super_admin, tenant_admin, manager, analyst, security, auditor, operator, supplier, worker
-  name        String
+  id   String  @id @default(uuid())
+  // tenantId nulo = papel de sistema (super_admin, tenant_admin, manager,
+  // analyst, security, auditor, operator, supplier, worker), disponível a
+  // todos os tenants e não editável. tenantId preenchido = "perfil de
+  // acesso" personalizado, criado pelo próprio tenant (Configurações >
+  // Perfis de Acesso), visível e editável só por ele.
+  tenantId String?
+  key      String // ex.: tenant_admin (sistema) ou um slug gerado para perfis custom
+  name     String
+
+  tenant      Tenant?          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   permissions RolePermission[]
   access      UserTenantAccess[]
 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tenantId, key])
   @@map("roles")
 }
 
@@ -241,6 +255,11 @@ model Document {
   // Nulo enquanto o documento é apenas uma pendência aguardando upload
   // (ex.: requisito obrigatório criado na confirmação de cadastro).
   fileName       String?
+  // Texto do documento disponível para análise por IA. Stand-in
+  // deliberado para o pipeline de OCR real (Fase 2 do ROADMAP.md, ainda
+  // não implementado): até existir extração automática de PDF/imagem,
+  // o conteúdo é inserido manualmente para permitir a análise real por IA.
+  content        String?        @db.Text
   status         DocumentStatus @default(PENDING)
   issuedAt       DateTime?
   expiresAt      DateTime?
@@ -252,10 +271,48 @@ model Document {
   company      Company?     @relation(fields: [companyId], references: [id], onDelete: SetNull)
   worker       Worker?      @relation(fields: [workerId], references: [id], onDelete: SetNull)
   documentType DocumentType @relation(fields: [documentTypeId], references: [id])
+  analyses     AIAnalysis[]
 
   @@index([tenantId])
   @@index([tenantId, expiresAt])
   @@map("documents")
+}
+
+// ---------------------------------------------------------------------------
+// IA — Document Intelligence (Fase 2 do ROADMAP.md)
+// ---------------------------------------------------------------------------
+
+enum AIAnalysisStatus {
+  COMPLETED
+  FAILED
+}
+
+model AIAnalysis {
+  id         String            @id @default(uuid())
+  tenantId   String
+  documentId String
+  provider   String // ex.: anthropic, openai
+  model      String // ex.: claude-sonnet-5
+  promptVersion String @default("v1")
+  status     AIAnalysisStatus
+  // Nunca autoridade absoluta (SECURITY.md §8): toda saída carrega
+  // confiança, evidência (o texto analisado) e é revisável por humano.
+  confidence      Float?
+  documentTypeGuess String?
+  extractedFields Json?
+  anomalies       Json?
+  summary         String?  @db.Text
+  errorMessage    String?
+  reviewedByUserId String?
+  reviewedAt        DateTime?
+  createdAt  DateTime @default(now())
+
+  tenant   Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([documentId])
+  @@map("ai_analyses")
 }
 
 // ---------------------------------------------------------------------------

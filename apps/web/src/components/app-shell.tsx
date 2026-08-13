@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
-import { Bell, Boxes, LogOut } from "lucide-react";
+import { Bell, Boxes, LogOut, ShieldCheck } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 
 const NAV = [
@@ -102,6 +102,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     <div className="text-xs text-muted">{user?.tenant.name}</div>
                   </div>
                   <div className="my-1 border-t border-border" />
+                  <Link
+                    href="/settings/roles"
+                    onClick={() => setMenuOpen(false)}
+                    className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-muted hover:bg-black/5 hover:text-gray-900"
+                  >
+                    <ShieldCheck size={16} />
+                    Perfis de acesso
+                  </Link>
                   <button
                     onClick={logout}
                     className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-muted hover:bg-black/5 hover:text-gray-900"

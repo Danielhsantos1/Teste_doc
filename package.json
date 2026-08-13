@@ -6,7 +6,7 @@
     "packages/*"
   ],
   "scripts": {
-    "postinstall": "npm run build --workspace=@docdeck/risk-engine",
+    "postinstall": "npm run build --workspace=@docdeck/risk-engine --workspace=@docdeck/ai",
     "dev": "turbo run dev",
     "build": "turbo run build",
     "lint": "turbo run lint",

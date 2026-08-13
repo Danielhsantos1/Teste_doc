@@ -20,6 +20,8 @@ const PERMISSIONS = [
   "contracts.read",
   "contracts.create",
   "audits.read",
+  "roles.manage",
+  "ai.analyze",
 ];
 
 function daysFromNow(days: number): Date {
@@ -43,11 +45,15 @@ async function main() {
     )
   );
 
-  const tenantAdminRole = await prisma.role.upsert({
-    where: { key: "tenant_admin" },
-    update: {},
-    create: { key: "tenant_admin", name: "Admin do Tenant" },
-  });
+  // Prisma não aceita `null` na chave composta de um upsert (tenantId_key),
+  // então papéis de sistema (tenantId nulo) usam findFirst + create manual.
+  async function upsertSystemRole(key: string, name: string) {
+    const existing = await prisma.role.findFirst({ where: { tenantId: null, key } });
+    if (existing) return existing;
+    return prisma.role.create({ data: { key, name } });
+  }
+
+  const tenantAdminRole = await upsertSystemRole("tenant_admin", "Admin do Tenant");
 
   await Promise.all(
     permissions.map((p) =>
@@ -58,6 +64,62 @@ async function main() {
       })
     )
   );
+
+  // Demais papéis de sistema citados no briefing (Seção 11), com um
+  // conjunto de permissões inicial razoável — ajustável depois pela
+  // própria tela de Perfis de Acesso (papéis de sistema não são editáveis,
+  // mas servem de referência/ponto de partida para perfis personalizados).
+  const permissionByKey = new Map(permissions.map((p) => [p.key, p]));
+  const SYSTEM_ROLES: Array<{ key: string; name: string; permissionKeys: string[] }> = [
+    { key: "super_admin", name: "Super Admin", permissionKeys: PERMISSIONS },
+    {
+      key: "manager",
+      name: "Gestor",
+      permissionKeys: [
+        "dashboard.read",
+        "companies.read",
+        "workers.read",
+        "documents.read",
+        "contracts.read",
+        "contracts.create",
+        "risk.read",
+        "audits.read",
+      ],
+    },
+    {
+      key: "analyst",
+      name: "Analista",
+      permissionKeys: ["companies.read", "workers.read", "documents.read", "documents.upload", "risk.read"],
+    },
+    {
+      key: "security",
+      name: "Segurança",
+      permissionKeys: ["workers.read", "documents.read", "risk.read"],
+    },
+    {
+      key: "auditor",
+      name: "Auditor",
+      permissionKeys: ["audits.read", "documents.read", "companies.read", "workers.read", "risk.read"],
+    },
+    { key: "operator", name: "Operador", permissionKeys: ["workers.read", "documents.read"] },
+    { key: "supplier", name: "Fornecedor", permissionKeys: ["documents.read", "documents.upload"] },
+    { key: "worker", name: "Trabalhador", permissionKeys: ["documents.read"] },
+  ];
+
+  for (const roleDef of SYSTEM_ROLES) {
+    const role = await upsertSystemRole(roleDef.key, roleDef.name);
+    await Promise.all(
+      roleDef.permissionKeys.map((key) => {
+        const permission = permissionByKey.get(key);
+        if (!permission) return Promise.resolve();
+        return prisma.rolePermission.upsert({
+          where: { roleId_permissionId: { roleId: role.id, permissionId: permission.id } },
+          update: {},
+          create: { roleId: role.id, permissionId: permission.id },
+        });
+      })
+    );
+  }
 
   const passwordHash = await bcrypt.hash("docdeck123", 10);
   const adminUser = await prisma.user.upsert({
