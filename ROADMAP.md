@@ -140,6 +140,29 @@ diferencial de SLA declarado no pitch deck (24h/média 2h).
 
 ## 7. Status atual
 
-**Nenhuma fase iniciada.** Este roadmap e os documentos `ARCHITECTURE.md`,
-`DATABASE.md` e `SECURITY.md` são a entrega desta etapa e aguardam validação antes
-do início da Fase 0.
+**Fase 0 concluída; Fase 1 em andamento; partes das Fases 3, 4 e 12 adiantadas.**
+
+- **Fase 0 (Foundation)**: monorepo (Turborepo), Prisma multi-tenant, autenticação
+  JWT, RBAC granular, design system (tema claro + shell com sidebar/nav de módulos),
+  CI ainda não configurado.
+- **Fase 1 (Core DocDeck)**: empresas (contratadas), trabalhadores (colaboradores),
+  contratos, documentos, Command Center, fluxo de onboarding de contratada
+  (`ARCHITECTURE.md` §8) — implementados. Upload real de arquivo (hoje só texto
+  colado) e o segundo ponto de entrada do onboarding (via criação de contrato) ainda
+  faltam.
+- **Fase 3 (Requirements + Rules Engine)**: adiantada parcialmente — pendência
+  documental automática na confirmação de cadastro usa uma lista fixa de tipos
+  obrigatórios como stand-in; o Requirement/Rules Engine completo ainda não existe.
+- **Fase 4 (Risk Engine)**: `packages/risk-engine` implementado e testado (score,
+  nível, fatores explicáveis), calculado ao vivo para Company 360. Falta aplicar o
+  mesmo motor a Contract/Worker/Site e substituir os campos estáticos remanescentes.
+- **Fase 6/2 (Document Intelligence)**: adapter de IA real (Anthropic) implementado
+  em `packages/ai`, com human-in-the-loop por threshold de confiança. OCR real
+  (extração automática de PDF/imagem) ainda não existe — o texto do documento é
+  inserido manualmente como stand-in documentado.
+- **Fase 12 (Enterprise)**: perfis de acesso (RBAC personalizado por tenant)
+  adiantados; SSO, MFA, SCIM, webhooks e integrações externas ainda não.
+
+Pendências estruturais antes de produção: Row-Level Security no Postgres (hoje o
+isolamento é só via Prisma/aplicação), cookie httpOnly + CSRF (auth hoje usa
+localStorage/sessionStorage), testes de integração/E2E, CI/CD.

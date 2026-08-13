@@ -12,7 +12,11 @@ import { HealthController } from "./health/health.controller";
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    // Aceita tanto um .env local em apps/api quanto o .env compartilhado na
+    // raiz do monorepo — necessário porque Turborepo executa o script "dev"
+    // de cada workspace com cwd = apps/api, então o ConfigModule sozinho
+    // (que só olha o cwd por padrão) nunca acharia o .env da raiz.
+    ConfigModule.forRoot({ isGlobal: true, envFilePath: [".env", "../../.env"] }),
     PrismaModule,
     AuthModule,
     DashboardModule,
