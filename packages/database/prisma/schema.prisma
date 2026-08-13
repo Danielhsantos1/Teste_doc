@@ -1,0 +1,262 @@
+// DocDeck — schema Prisma
+//
+// Este é o subconjunto do modelo conceitual descrito em `DATABASE.md`
+// implementado no kickoff da Fase 0/Fase 1. Entidades descritas em
+// DATABASE.md e ainda NÃO representadas aqui (ex.: Supplier como entidade
+// própria, Requirement/RequirementSet/RequirementRule, Activity, Site/Area,
+// Audit/AuditFinding, AI*, Notification*, Workflow/Task) serão adicionadas
+// incrementalmente nas próximas fases do ROADMAP.md. Risco aqui é um campo
+// calculado simples (riskScore/riskLevel) — o Risk Engine com fatores
+// explicáveis (RiskFactor) é trabalho de Fase 4.
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum DocumentStatus {
+  PENDING
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  EXPIRED
+}
+
+enum WorkerStatus {
+  APTO
+  APTO_COM_RESTRICAO
+  PENDENTE
+  BLOQUEADO
+}
+
+// ---------------------------------------------------------------------------
+// Tenancy
+// ---------------------------------------------------------------------------
+
+model Tenant {
+  id        String   @id @default(uuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users     UserTenantAccess[]
+  companies Company[]
+  workers   Worker[]
+  contracts Contract[]
+  documents Document[]
+  auditLogs AuditLog[]
+
+  @@map("tenants")
+}
+
+// ---------------------------------------------------------------------------
+// Usuários e acesso (RBAC granular)
+// ---------------------------------------------------------------------------
+
+model User {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  tenantAccess UserTenantAccess[]
+  auditLogs    AuditLog[]
+
+  @@map("users")
+}
+
+model UserTenantAccess {
+  id       String @id @default(uuid())
+  userId   String
+  tenantId String
+  roleId   String
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  role   Role   @relation(fields: [roleId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, tenantId])
+  @@map("user_tenant_access")
+}
+
+model Role {
+  id          String   @id @default(uuid())
+  key         String   @unique // super_admin, tenant_admin, manager, analyst, security, auditor, operator, supplier, worker
+  name        String
+  permissions RolePermission[]
+  access      UserTenantAccess[]
+
+  @@map("roles")
+}
+
+model Permission {
+  id    String @id @default(uuid())
+  key   String @unique // ex.: companies.read, documents.approve
+  roles RolePermission[]
+
+  @@map("permissions")
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+// ---------------------------------------------------------------------------
+// Empresas
+// ---------------------------------------------------------------------------
+
+model Company {
+  id        String   @id @default(uuid())
+  tenantId  String
+  name      String
+  cnpj      String
+  status    String   @default("ACTIVE") // ACTIVE | SUSPENDED | BLOCKED
+  riskScore Int      @default(0)
+  riskLevel RiskLevel @default(LOW)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant    Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  workers   Worker[]
+  contracts Contract[]
+  documents Document[]
+
+  @@unique([tenantId, cnpj])
+  @@index([tenantId])
+  @@map("companies")
+}
+
+// ---------------------------------------------------------------------------
+// Contratos
+// ---------------------------------------------------------------------------
+
+model Contract {
+  id            String   @id @default(uuid())
+  tenantId      String
+  companyId     String
+  code          String
+  status        String   @default("ACTIVE") // ACTIVE | EXPIRING | EXPIRED
+  startDate     DateTime
+  endDate       DateTime
+  riskScore     Int      @default(0)
+  riskLevel     RiskLevel @default(LOW)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@map("contracts")
+}
+
+// ---------------------------------------------------------------------------
+// Trabalhadores
+// ---------------------------------------------------------------------------
+
+model Worker {
+  id        String       @id @default(uuid())
+  tenantId  String
+  companyId String
+  name      String
+  cpf       String
+  role      String
+  status    WorkerStatus @default(PENDENTE)
+  riskScore Int          @default(0)
+  riskLevel RiskLevel    @default(LOW)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  tenant    Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  company   Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  documents Document[]
+
+  @@unique([tenantId, cpf])
+  @@index([tenantId])
+  @@map("workers")
+}
+
+// ---------------------------------------------------------------------------
+// Documentos
+// ---------------------------------------------------------------------------
+
+model DocumentType {
+  id        String @id @default(uuid())
+  code      String @unique // ASO, NR35, CONTRATO_SOCIAL, ...
+  name      String
+  documents Document[]
+
+  @@map("document_types")
+}
+
+model Document {
+  id             String         @id @default(uuid())
+  tenantId       String
+  companyId      String?
+  workerId       String?
+  documentTypeId String
+  fileName       String
+  status         DocumentStatus @default(PENDING)
+  issuedAt       DateTime?
+  expiresAt      DateTime?
+  aiConfidence   Float?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  company      Company?     @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  worker       Worker?      @relation(fields: [workerId], references: [id], onDelete: SetNull)
+  documentType DocumentType @relation(fields: [documentTypeId], references: [id])
+
+  @@index([tenantId])
+  @@index([tenantId, expiresAt])
+  @@map("documents")
+}
+
+// ---------------------------------------------------------------------------
+// Auditoria
+// ---------------------------------------------------------------------------
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  tenantId   String
+  userId     String?
+  action     String
+  entityType String
+  entityId   String
+  before     Json?
+  after      Json?
+  reason     String?
+  createdAt  DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User?  @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, createdAt])
+  @@map("audit_logs")
+}
