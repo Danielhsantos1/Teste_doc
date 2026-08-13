@@ -42,7 +42,7 @@ export default function NewCompanyPage() {
       });
       setPending(res);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Não foi possível cadastrar a empresa.");
+      setError(err instanceof ApiError ? err.message : "Não foi possível cadastrar a contratada.");
     } finally {
       setSubmitting(false);
     }
@@ -68,7 +68,7 @@ export default function NewCompanyPage() {
   return (
     <div className="flex max-w-xl flex-col gap-6">
       <div>
-        <h1 className="text-xl font-semibold text-gray-900">Nova empresa</h1>
+        <h1 className="text-xl font-semibold text-gray-900">Nova contratada</h1>
         <p className="text-sm text-muted">
           Cadastro de contratada — o mesmo fluxo usado a partir da criação de um contrato.
         </p>
@@ -120,7 +120,7 @@ export default function NewCompanyPage() {
               disabled={submitting}
               className="mt-2 rounded-lg bg-accent px-3 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
             >
-              {submitting ? "Enviando..." : "Cadastrar empresa"}
+              {submitting ? "Enviando..." : "Cadastrar contratada"}
             </button>
           </form>
         </Card>
@@ -133,7 +133,7 @@ export default function NewCompanyPage() {
             Em produção, um e-mail de confirmação seria enviado para{" "}
             <span className="text-gray-200">{contactEmail}</span> (Notification Engine — ainda
             não implementado). Neste ambiente de desenvolvimento, o clique no link do e-mail é
-            simulado pelo botão abaixo — as credenciais de acesso só são criadas e a empresa só
+            simulado pelo botão abaixo — as credenciais de acesso só são criadas e a contratada só
             fica ACTIVE depois desta confirmação.
           </p>
           <div className="mb-4 rounded-lg border border-border bg-surface px-3 py-2 font-mono text-xs text-muted">
@@ -156,7 +156,7 @@ export default function NewCompanyPage() {
         <Card>
           <div className="mb-2 text-sm font-medium text-low">Cadastro confirmado</div>
           <p className="mb-4 text-sm text-muted">
-            A empresa está <span className="text-gray-200">ACTIVE</span> e já abre com as
+            A contratada está <span className="text-gray-200">ACTIVE</span> e já abre com as
             pendências documentais obrigatórias:
           </p>
           <ul className="mb-4 flex flex-col gap-2">
@@ -172,7 +172,7 @@ export default function NewCompanyPage() {
             className="inline-block rounded-lg bg-accent px-3 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
             onClick={() => router.refresh()}
           >
-            Ver empresa
+            Ver contratada
           </Link>
         </Card>
       )}

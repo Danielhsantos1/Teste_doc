@@ -27,13 +27,13 @@ export default function WorkersPage() {
   }, []);
 
   if (error) return <div className="text-critical">Erro ao carregar: {error}</div>;
-  if (!workers) return <div className="text-muted">Carregando trabalhadores...</div>;
+  if (!workers) return <div className="text-muted">Carregando colaboradores...</div>;
 
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-xl font-semibold text-gray-900">Trabalhadores</h1>
-        <p className="text-sm text-muted">{workers.length} trabalhadores neste tenant.</p>
+        <h1 className="text-xl font-semibold text-gray-900">Colaboradores</h1>
+        <p className="text-sm text-muted">{workers.length} colaboradores neste tenant.</p>
       </div>
 
       <Card className="p-0">

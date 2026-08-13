@@ -41,7 +41,7 @@ export default function CompanyDetailPage() {
   }, [params.id]);
 
   if (error) return <div className="text-critical">Erro ao carregar: {error}</div>;
-  if (!company) return <div className="text-muted">Carregando empresa...</div>;
+  if (!company) return <div className="text-muted">Carregando contratada...</div>;
 
   return (
     <div className="flex flex-col gap-6">
@@ -62,7 +62,7 @@ export default function CompanyDetailPage() {
           value={company.computedRisk.score}
           tone={company.computedRisk.level === "CRITICAL" ? "critical" : undefined}
         />
-        <StatTile label="Trabalhadores" value={company.workers.length} />
+        <StatTile label="Colaboradores" value={company.workers.length} />
         <StatTile label="Contratos" value={company.contracts.length} />
       </div>
 
@@ -74,7 +74,7 @@ export default function CompanyDetailPage() {
         {company.computedRisk.factors.length === 0 ? (
           <p className="text-sm text-muted">
             Nenhum fator de risco identificado nos sinais disponíveis hoje (documentos e
-            trabalhadores bloqueados). Requisitos contratuais pendentes ainda não entram
+            colaboradores bloqueados). Requisitos contratuais pendentes ainda não entram
             no cálculo — o Requirement Engine é uma fase futura do ROADMAP.
           </p>
         ) : (
@@ -91,7 +91,7 @@ export default function CompanyDetailPage() {
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Card>
-          <div className="mb-3 text-sm font-medium text-gray-800">Trabalhadores</div>
+          <div className="mb-3 text-sm font-medium text-gray-800">Colaboradores</div>
           <ul className="flex flex-col gap-2">
             {company.workers.map((w) => (
               <li key={w.id} className="flex items-center justify-between text-sm">
@@ -102,7 +102,7 @@ export default function CompanyDetailPage() {
                 </div>
               </li>
             ))}
-            {company.workers.length === 0 && <li className="text-sm text-muted">Nenhum trabalhador.</li>}
+            {company.workers.length === 0 && <li className="text-sm text-muted">Nenhum colaborador.</li>}
           </ul>
         </Card>
 

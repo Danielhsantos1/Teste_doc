@@ -55,7 +55,7 @@ export default function DashboardPage() {
         <StatTile label="Conformidade geral" value={`${summary.conformidadeGeral}%`} />
         <StatTile label="Riscos críticos" value={summary.riscosCriticos} tone="critical" />
         <StatTile label="Riscos em atenção" value={summary.riscosEmAtencao} tone="warning" />
-        <StatTile label="Trabalhadores" value={summary.trabalhadores} />
+        <StatTile label="Colaboradores" value={summary.trabalhadores} />
         <StatTile label="Empresas" value={summary.empresas} />
         <StatTile label="Documentos" value={summary.documentos} />
         <StatTile label="Doc. vencendo (30d)" value={summary.documentosVencendo} tone="warning" />
@@ -87,10 +87,10 @@ export default function DashboardPage() {
           </Card>
 
           <Card>
-            <div className="mb-3 text-sm font-medium text-critical">Trabalhadores bloqueados</div>
+            <div className="mb-3 text-sm font-medium text-critical">Colaboradores bloqueados</div>
             <ul className="flex flex-col gap-2">
               {actions.blockedWorkers.length === 0 && (
-                <li className="text-sm text-muted">Nenhum trabalhador bloqueado.</li>
+                <li className="text-sm text-muted">Nenhum colaborador bloqueado.</li>
               )}
               {actions.blockedWorkers.map((w) => (
                 <li key={w.id}>

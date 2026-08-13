@@ -1,19 +1,21 @@
 "use client";
 
-// Armazenamento do token em localStorage é uma simplificação deliberada para
-// este kickoff local. SECURITY.md já define a evolução para cookie httpOnly +
-// CSRF token como parte da Fase 0 antes de qualquer ambiente de produção.
+// Armazenamento do token em localStorage/sessionStorage (conforme "Lembrar-me"
+// no login) é uma simplificação deliberada para este kickoff local.
+// SECURITY.md já define a evolução para cookie httpOnly + CSRF token como
+// parte da Fase 0 antes de qualquer ambiente de produção.
 
 import { createContext, useContext, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { login as apiLogin, LoginResponse } from "./api";
+import { clearSession, readSessionValue, writeSession } from "./session-storage";
 
 type AuthUser = LoginResponse["user"];
 
 interface AuthContextValue {
   user: AuthUser | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string, rememberMe: boolean) => Promise<void>;
   logout: () => void;
 }
 
@@ -24,27 +26,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const raw = window.localStorage.getItem("docdeck_user");
+    const raw = readSessionValue("docdeck_user");
     if (raw) {
       try {
         setUser(JSON.parse(raw));
       } catch {
-        window.localStorage.removeItem("docdeck_user");
+        clearSession();
       }
     }
     setLoading(false);
   }, []);
 
-  async function login(email: string, password: string) {
+  async function login(email: string, password: string, rememberMe: boolean) {
     const res = await apiLogin(email, password);
-    window.localStorage.setItem("docdeck_token", res.accessToken);
-    window.localStorage.setItem("docdeck_user", JSON.stringify(res.user));
+    writeSession(res.accessToken, JSON.stringify(res.user), rememberMe);
     setUser(res.user);
   }
 
   function logout() {
-    window.localStorage.removeItem("docdeck_token");
-    window.localStorage.removeItem("docdeck_user");
+    clearSession();
     setUser(null);
   }
 

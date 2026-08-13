@@ -36,7 +36,7 @@ export default function WorkerDetailPage() {
   }, [params.id]);
 
   if (error) return <div className="text-critical">Erro ao carregar: {error}</div>;
-  if (!worker) return <div className="text-muted">Carregando trabalhador...</div>;
+  if (!worker) return <div className="text-muted">Carregando colaborador...</div>;
 
   return (
     <div className="flex flex-col gap-6">

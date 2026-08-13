@@ -27,20 +27,20 @@ export default function CompaniesPage() {
   }, []);
 
   if (error) return <div className="text-critical">Erro ao carregar: {error}</div>;
-  if (!companies) return <div className="text-muted">Carregando empresas...</div>;
+  if (!companies) return <div className="text-muted">Carregando contratadas...</div>;
 
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-gray-900">Empresas</h1>
-          <p className="text-sm text-muted">{companies.length} empresas cadastradas neste tenant.</p>
+          <h1 className="text-xl font-semibold text-gray-900">Contratadas</h1>
+          <p className="text-sm text-muted">{companies.length} contratadas cadastradas neste tenant.</p>
         </div>
         <Link
           href="/companies/new"
           className="rounded-lg bg-accent px-3 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
         >
-          + Nova empresa
+          + Nova contratada
         </Link>
       </div>
 
@@ -48,11 +48,11 @@ export default function CompaniesPage() {
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b border-border text-xs uppercase tracking-wide text-muted">
-              <th className="px-4 py-3 font-medium">Empresa</th>
+              <th className="px-4 py-3 font-medium">Contratada</th>
               <th className="px-4 py-3 font-medium">CNPJ</th>
               <th className="px-4 py-3 font-medium">Status</th>
               <th className="px-4 py-3 font-medium">Risco</th>
-              <th className="px-4 py-3 font-medium">Trabalhadores</th>
+              <th className="px-4 py-3 font-medium">Colaboradores</th>
               <th className="px-4 py-3 font-medium">Contratos</th>
               <th className="px-4 py-3 font-medium">Documentos</th>
             </tr>
