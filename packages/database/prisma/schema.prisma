@@ -1,0 +1,408 @@
+// DocDeck — schema Prisma
+//
+// Este é o subconjunto do modelo conceitual descrito em `DATABASE.md`
+// implementado no kickoff da Fase 0/Fase 1. Entidades descritas em
+// DATABASE.md e ainda NÃO representadas aqui (ex.: Supplier como entidade
+// própria, Requirement/RequirementSet/RequirementRule, Activity, Site/Area,
+// Audit/AuditFinding, AI*, Notification*, Workflow/Task) serão adicionadas
+// incrementalmente nas próximas fases do ROADMAP.md. Risco aqui é um campo
+// calculado simples (riskScore/riskLevel) — o Risk Engine com fatores
+// explicáveis (RiskFactor) é trabalho de Fase 4.
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/client"
+}
+
+datasource db {
+  provider  = "postgresql"
+  // DATABASE_URL: conexão via pooler (PgBouncer) — usada em runtime pela
+  // aplicação (bom para serverless, onde cada invocação pode abrir uma nova
+  // conexão). DIRECT_URL: conexão direta ao Postgres — usada só por
+  // `prisma migrate`/`db push`, porque migrations dependem de locks de
+  // sessão que não funcionam de forma confiável atrás de um pooler em modo
+  // transaction. Em dev local (um único Postgres, sem pooler) as duas
+  // variáveis apontam para a mesma URL.
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum DocumentStatus {
+  PENDING
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  EXPIRED
+}
+
+enum WorkerStatus {
+  APTO
+  APTO_COM_RESTRICAO
+  PENDENTE
+  BLOQUEADO
+}
+
+// ---------------------------------------------------------------------------
+// Tenancy
+// ---------------------------------------------------------------------------
+
+model Tenant {
+  id        String   @id @default(uuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users     UserTenantAccess[]
+  companies Company[]
+  workers   Worker[]
+  contracts Contract[]
+  documents Document[]
+  auditLogs AuditLog[]
+  roles     Role[]
+  aiAnalyses AIAnalysis[]
+  mobilizations Mobilization[]
+
+  @@map("tenants")
+}
+
+// ---------------------------------------------------------------------------
+// Usuários e acesso (RBAC granular)
+// ---------------------------------------------------------------------------
+
+model User {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  tenantAccess UserTenantAccess[]
+  auditLogs    AuditLog[]
+  mobilizationsRequested Mobilization[]
+
+  @@map("users")
+}
+
+model UserTenantAccess {
+  id       String @id @default(uuid())
+  userId   String
+  tenantId String
+  roleId   String
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  role   Role   @relation(fields: [roleId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, tenantId])
+  @@map("user_tenant_access")
+}
+
+model Role {
+  id   String  @id @default(uuid())
+  // tenantId nulo = papel de sistema (super_admin, tenant_admin, manager,
+  // analyst, security, auditor, operator, supplier, worker), disponível a
+  // todos os tenants e não editável. tenantId preenchido = "perfil de
+  // acesso" personalizado, criado pelo próprio tenant (Configurações >
+  // Perfis de Acesso), visível e editável só por ele.
+  tenantId String?
+  key      String // ex.: tenant_admin (sistema) ou um slug gerado para perfis custom
+  name     String
+
+  tenant      Tenant?          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  permissions RolePermission[]
+  access      UserTenantAccess[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tenantId, key])
+  @@map("roles")
+}
+
+model Permission {
+  id    String @id @default(uuid())
+  key   String @unique // ex.: companies.read, documents.approve
+  roles RolePermission[]
+
+  @@map("permissions")
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+// ---------------------------------------------------------------------------
+// Empresas
+// ---------------------------------------------------------------------------
+
+model Company {
+  id        String   @id @default(uuid())
+  tenantId  String
+  name      String
+  cnpj      String
+  // PENDING_CONFIRMATION | ACTIVE | SUSPENDED | BLOCKED — o fluxo de
+  // cadastro (ARCHITECTURE.md §8) começa em PENDING_CONFIRMATION e só vira
+  // ACTIVE após confirmação de e-mail, quando as pendências documentais
+  // obrigatórias também são criadas.
+  status            String    @default("ACTIVE")
+  contactEmail      String?
+  confirmationToken String?   @unique
+  confirmedAt       DateTime?
+  riskScore Int      @default(0)
+  riskLevel RiskLevel @default(LOW)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant    Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  workers   Worker[]
+  contracts Contract[]
+  documents Document[]
+  mobilizations Mobilization[]
+
+  @@unique([tenantId, cnpj])
+  @@index([tenantId])
+  @@map("companies")
+}
+
+// ---------------------------------------------------------------------------
+// Contratos
+// ---------------------------------------------------------------------------
+
+model Contract {
+  id            String   @id @default(uuid())
+  tenantId      String
+  companyId     String
+  code          String
+  status        String   @default("ACTIVE") // ACTIVE | EXPIRING | EXPIRED
+  startDate     DateTime
+  endDate       DateTime
+  riskScore     Int      @default(0)
+  riskLevel     RiskLevel @default(LOW)
+
+  // Wizard "Cadastrar Novo Contrato" (CLM) — preenchidos passo a passo.
+  modalidade         String? // CENTRALIZADA | DESCENTRALIZADA | EMERGENCIAL
+  objeto             String?
+  escopo             String?
+  technicalProposal  String?
+  commercialValue    Float?
+  paymentTerms       String?
+  additionalNotes    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  mobilizations Mobilization[]
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@map("contracts")
+}
+
+// ---------------------------------------------------------------------------
+// Mobilização (MOB) — cadastro/vinculação de uma contratada a um novo
+// contrato, conforme o processo "Processos_MOB" (Tomador → DocDeck →
+// Prestador). A etapa "DocDeck / Analista" de revisão manual do diagrama
+// original é, por decisão explícita nesta fase, automática (o próprio
+// sistema registra e efetiva o contrato assim que a contratada confirma os
+// dados) — não existe ainda uma fila de revisão humana cross-tenant. A
+// criação de credenciais de acesso para a contratada (último passo do
+// diagrama) também não está implementada: o cadastro fica ACTIVE e com as
+// pendências documentais de praxe, mas sem login próprio para o prestador.
+// ---------------------------------------------------------------------------
+
+enum MobilizationStatus {
+  AGUARDANDO_PRESTADOR // contratada nova: aguardando confirmação de dados cadastrais
+  CONCLUIDA // contratada vinculada e contrato efetivado
+  CANCELADA
+}
+
+model Mobilization {
+  id           String             @id @default(uuid())
+  tenantId     String
+  companyId    String
+  contractId   String?
+  status       MobilizationStatus @default(AGUARDANDO_PRESTADOR)
+  isNewCompany Boolean
+
+  requestedByUserId String
+
+  // Dados do contrato "represados" enquanto uma contratada NOVA ainda não
+  // confirmou o cadastro — diagrama: só depois da confirmação (mensagem
+  // "Validar informações de cadastro e contato" → "Confirmar dados
+  // cadastrais") é que o contrato é de fato efetivado ("Cadastrar
+  // contrato"). Para contratada já ativa, o contrato é criado na hora e
+  // estes campos ficam nulos.
+  pendingContractCode              String?
+  pendingContractStartDate         DateTime?
+  pendingContractEndDate           DateTime?
+  pendingContractModalidade        String?
+  pendingContractObjeto            String?
+  pendingContractEscopo            String?
+  pendingContractTechnicalProposal String?
+  pendingContractCommercialValue   Float?
+  pendingContractPaymentTerms      String?
+  pendingContractAdditionalNotes   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  contract    Contract? @relation(fields: [contractId], references: [id], onDelete: SetNull)
+  requestedBy User     @relation(fields: [requestedByUserId], references: [id])
+
+  @@index([tenantId])
+  @@map("mobilizations")
+}
+
+// ---------------------------------------------------------------------------
+// Trabalhadores
+// ---------------------------------------------------------------------------
+
+model Worker {
+  id        String       @id @default(uuid())
+  tenantId  String
+  companyId String
+  name      String
+  cpf       String
+  role      String
+  status    WorkerStatus @default(PENDENTE)
+  riskScore Int          @default(0)
+  riskLevel RiskLevel    @default(LOW)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  tenant    Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  company   Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  documents Document[]
+
+  @@unique([tenantId, cpf])
+  @@index([tenantId])
+  @@map("workers")
+}
+
+// ---------------------------------------------------------------------------
+// Documentos
+// ---------------------------------------------------------------------------
+
+model DocumentType {
+  id         String  @id @default(uuid())
+  code       String  @unique // ASO, NR35, CONTRATO_SOCIAL, ...
+  name       String
+  isCritical Boolean @default(false) // usado pelo Risk Engine (packages/risk-engine)
+  documents  Document[]
+
+  @@map("document_types")
+}
+
+model Document {
+  id             String         @id @default(uuid())
+  tenantId       String
+  companyId      String?
+  workerId       String?
+  documentTypeId String
+  // Nulo enquanto o documento é apenas uma pendência aguardando upload
+  // (ex.: requisito obrigatório criado na confirmação de cadastro).
+  fileName       String?
+  // Texto do documento disponível para análise por IA. Stand-in
+  // deliberado para o pipeline de OCR real (Fase 2 do ROADMAP.md, ainda
+  // não implementado): até existir extração automática de PDF/imagem,
+  // o conteúdo é inserido manualmente para permitir a análise real por IA.
+  content        String?        @db.Text
+  status         DocumentStatus @default(PENDING)
+  issuedAt       DateTime?
+  expiresAt      DateTime?
+  aiConfidence   Float?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  company      Company?     @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  worker       Worker?      @relation(fields: [workerId], references: [id], onDelete: SetNull)
+  documentType DocumentType @relation(fields: [documentTypeId], references: [id])
+  analyses     AIAnalysis[]
+
+  @@index([tenantId])
+  @@index([tenantId, expiresAt])
+  @@map("documents")
+}
+
+// ---------------------------------------------------------------------------
+// IA — Document Intelligence (Fase 2 do ROADMAP.md)
+// ---------------------------------------------------------------------------
+
+enum AIAnalysisStatus {
+  COMPLETED
+  FAILED
+}
+
+model AIAnalysis {
+  id         String            @id @default(uuid())
+  tenantId   String
+  documentId String
+  provider   String // ex.: anthropic, openai
+  model      String // ex.: claude-sonnet-5
+  promptVersion String @default("v1")
+  status     AIAnalysisStatus
+  // Nunca autoridade absoluta (SECURITY.md §8): toda saída carrega
+  // confiança, evidência (o texto analisado) e é revisável por humano.
+  confidence      Float?
+  documentTypeGuess String?
+  extractedFields Json?
+  anomalies       Json?
+  summary         String?  @db.Text
+  errorMessage    String?
+  reviewedByUserId String?
+  reviewedAt        DateTime?
+  createdAt  DateTime @default(now())
+
+  tenant   Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([documentId])
+  @@map("ai_analyses")
+}
+
+// ---------------------------------------------------------------------------
+// Auditoria
+// ---------------------------------------------------------------------------
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  tenantId   String
+  userId     String?
+  action     String
+  entityType String
+  entityId   String
+  before     Json?
+  after      Json?
+  reason     String?
+  createdAt  DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User?  @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, createdAt])
+  @@map("audit_logs")
+}

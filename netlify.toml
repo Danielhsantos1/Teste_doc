@@ -1,0 +1,18 @@
+# Site único na Netlify servindo frontend (apps/web, Next.js) E backend
+# (apps/api, como Netlify Function) juntos, a partir da raiz do monorepo.
+# Evita a complicação de um segundo site com "Base directory" separado — a
+# API é só mais uma função dentro deste mesmo site.
+[build]
+  command = "npm install && npx prisma generate --schema packages/database/prisma/schema.prisma && npx prisma migrate deploy --schema packages/database/prisma/schema.prisma && npx tsx packages/database/prisma/seed.ts && npm run build --workspace=@docdeck/api && npm run build --workspace=@docdeck/web"
+  publish = "apps/web/.next"
+  functions = "apps/api/netlify/functions"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# Todo pedido para /api/* cai na função que empacota o app NestJS inteiro
+# (apps/api/src/lambda.ts, compilado por `tsc` durante o build acima).
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
