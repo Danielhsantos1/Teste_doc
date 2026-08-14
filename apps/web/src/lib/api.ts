@@ -1,6 +1,10 @@
 import { readSessionValue } from "./session-storage";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+// Sem NEXT_PUBLIC_API_URL definida, assume mesma origem (front e API no
+// mesmo site Netlify, API servida via redirect de /api/* para uma Netlify
+// Function). Em dev local, .env define essa variável apontando pra
+// http://localhost:4000 (apps/api rodando como servidor separado).
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
 
 export class ApiError extends Error {
   constructor(
