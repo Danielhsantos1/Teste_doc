@@ -68,6 +68,7 @@ model Tenant {
   auditLogs AuditLog[]
   roles     Role[]
   aiAnalyses AIAnalysis[]
+  mobilizations Mobilization[]
 
   @@map("tenants")
 }
@@ -86,6 +87,7 @@ model User {
 
   tenantAccess UserTenantAccess[]
   auditLogs    AuditLog[]
+  mobilizationsRequested Mobilization[]
 
   @@map("users")
 }
@@ -173,6 +175,7 @@ model Company {
   workers   Worker[]
   contracts Contract[]
   documents Document[]
+  mobilizations Mobilization[]
 
   @@unique([tenantId, cnpj])
   @@index([tenantId])
@@ -208,10 +211,68 @@ model Contract {
 
   tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  mobilizations Mobilization[]
 
   @@unique([tenantId, code])
   @@index([tenantId])
   @@map("contracts")
+}
+
+// ---------------------------------------------------------------------------
+// Mobilização (MOB) — cadastro/vinculação de uma contratada a um novo
+// contrato, conforme o processo "Processos_MOB" (Tomador → DocDeck →
+// Prestador). A etapa "DocDeck / Analista" de revisão manual do diagrama
+// original é, por decisão explícita nesta fase, automática (o próprio
+// sistema registra e efetiva o contrato assim que a contratada confirma os
+// dados) — não existe ainda uma fila de revisão humana cross-tenant. A
+// criação de credenciais de acesso para a contratada (último passo do
+// diagrama) também não está implementada: o cadastro fica ACTIVE e com as
+// pendências documentais de praxe, mas sem login próprio para o prestador.
+// ---------------------------------------------------------------------------
+
+enum MobilizationStatus {
+  AGUARDANDO_PRESTADOR // contratada nova: aguardando confirmação de dados cadastrais
+  CONCLUIDA // contratada vinculada e contrato efetivado
+  CANCELADA
+}
+
+model Mobilization {
+  id           String             @id @default(uuid())
+  tenantId     String
+  companyId    String
+  contractId   String?
+  status       MobilizationStatus @default(AGUARDANDO_PRESTADOR)
+  isNewCompany Boolean
+
+  requestedByUserId String
+
+  // Dados do contrato "represados" enquanto uma contratada NOVA ainda não
+  // confirmou o cadastro — diagrama: só depois da confirmação (mensagem
+  // "Validar informações de cadastro e contato" → "Confirmar dados
+  // cadastrais") é que o contrato é de fato efetivado ("Cadastrar
+  // contrato"). Para contratada já ativa, o contrato é criado na hora e
+  // estes campos ficam nulos.
+  pendingContractCode              String?
+  pendingContractStartDate         DateTime?
+  pendingContractEndDate           DateTime?
+  pendingContractModalidade        String?
+  pendingContractObjeto            String?
+  pendingContractEscopo            String?
+  pendingContractTechnicalProposal String?
+  pendingContractCommercialValue   Float?
+  pendingContractPaymentTerms      String?
+  pendingContractAdditionalNotes   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  contract    Contract? @relation(fields: [contractId], references: [id], onDelete: SetNull)
+  requestedBy User     @relation(fields: [requestedByUserId], references: [id])
+
+  @@index([tenantId])
+  @@map("mobilizations")
 }
 
 // ---------------------------------------------------------------------------

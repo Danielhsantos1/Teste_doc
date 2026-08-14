@@ -7,6 +7,7 @@ import { CompaniesModule } from "./companies/companies.module";
 import { WorkersModule } from "./workers/workers.module";
 import { DocumentsModule } from "./documents/documents.module";
 import { ContractsModule } from "./contracts/contracts.module";
+import { MobilizationsModule } from "./mobilizations/mobilizations.module";
 import { RolesModule } from "./roles/roles.module";
 import { HealthController } from "./health/health.controller";
 
@@ -24,6 +25,7 @@ import { HealthController } from "./health/health.controller";
     WorkersModule,
     DocumentsModule,
     ContractsModule,
+    MobilizationsModule,
     RolesModule,
   ],
   controllers: [HealthController],

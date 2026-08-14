@@ -14,6 +14,14 @@ Risk Engine explicável e Document Intelligence com IA real (Anthropic — reque
 `AI_API_KEY` configurada; sem ela, o endpoint responde honestamente que a IA não
 está configurada, em vez de simular uma análise). Ver `ROADMAP.md` para o que falta.
 
+MOB (Mobilizações) tem uma primeira fatia real, baseada no processo
+`Processos_MOB` (Bizagi): cadastro/vinculação de contratada a um novo
+contrato, com confirmação da contratada antes do contrato ser efetivado. A
+etapa de revisão manual pela equipe DocDeck (raia "Analista" do processo
+original) é automática nesta fase — ainda não existe uma fila de revisão
+humana entre tenants — e a criação de credenciais de acesso para a
+contratada (último passo do processo) também não está implementada.
+
 ## Documentação
 
 | Documento | Conteúdo |

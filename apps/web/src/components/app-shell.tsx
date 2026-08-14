@@ -24,7 +24,7 @@ import { Logo } from "./logo";
 
 const MODULES = [
   { key: "clm", label: "CLM", href: "/contracts", enabled: true },
-  { key: "mob", label: "MOB", href: null, enabled: false },
+  { key: "mob", label: "MOB", href: "/mobilizations", enabled: true },
   { key: "med", label: "MED", href: null, enabled: false },
   { key: "enc", label: "ENC", href: null, enabled: false },
 ];
@@ -35,12 +35,12 @@ const SIDEBAR_NAV = [
   { href: "/workers", label: "Colaboradores", icon: Users },
   { href: "/documents", label: "Documentos", icon: FileText },
   { href: "/contracts", label: "Contratos", icon: FileSignature },
+  { href: "/mobilizations", label: "Mobilizações", icon: Truck },
   { href: "/settings/roles", label: "Perfis de Acesso", icon: ShieldCheck },
 ];
 
 const SIDEBAR_UPCOMING = [
   { label: "Controle de Acesso", icon: DoorClosed },
-  { label: "Mobilizações", icon: Truck },
   { label: "Validações", icon: CheckCircle2 },
   { label: "Auditoria", icon: History },
 ];

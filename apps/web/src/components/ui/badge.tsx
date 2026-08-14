@@ -33,6 +33,9 @@ export function StatusBadge({ status }: { status: string }) {
     EXPIRED: "bg-critical/10 text-critical border-critical/30",
     BLOQUEADO: "bg-critical/10 text-critical border-critical/30",
     REJECTED: "bg-critical/10 text-critical border-critical/30",
+    CONCLUIDA: "bg-low/10 text-low border-low/30",
+    AGUARDANDO_PRESTADOR: "bg-medium/10 text-medium border-medium/30",
+    CANCELADA: "bg-critical/10 text-critical border-critical/30",
   };
 
   return (
